@@ -25,19 +25,22 @@ mkdir -p /opt/database/pgdata
 cat << EOF > /opt/database/docker-compose.yml
 version: '3.3'
 services:
-  postgres1:
+  mariadb:
     restart: always
-    image: postgres:9.6.18-alpine
+    image: woahbase/alpine-mysql
     privileged: true
-    container_name: postgres
+    container_name: mariadb
     ports:
-      - 5432:5432
+      - 3306:3306
     environment:
-      POSTGRES_PASSWORD: password
-      PGDATA: /var/lib/postgresql/data/pgdata
+      MYSQL_USER_DB: mydb
+      MYSQL_USER: admin
+      MYSQL_USER_PWD: password
+      MYSQL_ROOT_PASSWORD: password
     volumes:
-      - /opt/database/pgdata:/var/lib/postgresql/data/pgdata
-      - /opt/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - /opt/database/data:/var/lib/mysql
+      - /etc/hosts:/etc/hosts:ro
+      - /etc/localtime:/etc/localtime:ro
 EOF
 
 wget http://192.168.1.254:8090/common/postgres-9.6.18.tar.gz
@@ -122,7 +125,7 @@ services:
     ports:
       - 8082:8082
     environment:
-      url: jdbc:postgresql://192.168.1.94:5432/mydb?characterEncoding=utf8&useSSL=true
+      url: jdbc:mysql://192.168.1.94:3306/mydb?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai
     volumes: 
       - /opt/nginx/uploads:/uploads
   pointsys-web:

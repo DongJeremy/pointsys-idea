@@ -13,8 +13,8 @@ spring:
   mvc:
     static-path-pattern: /**
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://192.168.1.94:5432/mydb?characterEncoding=utf8&useSSL=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.1.94:3306/mydb?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai
     username: admin
     password: password
   mail:
@@ -29,7 +29,7 @@ spring:
       max-file-size: -1 
       max-request-size: -1
 pagehelper:
-  helperDialect: postgresql
+  helperDialect: mysql
   reasonable: true
   supportMethodsArguments: true
   params: count=countSql

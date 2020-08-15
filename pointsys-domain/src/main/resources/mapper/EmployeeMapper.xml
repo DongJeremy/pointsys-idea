@@ -33,7 +33,7 @@
         and A.name = #{params.username}
       </if>
       <if test="params.department != null and params.department != ''">
-        and cast(A.department as character varying) = #{params.department}
+        and A.department = #{params.department}
       </if>
     </where>
   </sql>

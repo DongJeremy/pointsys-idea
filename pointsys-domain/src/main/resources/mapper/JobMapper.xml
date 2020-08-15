@@ -22,7 +22,7 @@
         and t.description like concat('%', #{params.description}, '%')
       </if>
       <if test="params.status != null and params.status != ''">
-        and cast(t.status as character varying) = #{params.status}
+        and t.status = #{params.status}
       </if>
     </where>
   </sql>
