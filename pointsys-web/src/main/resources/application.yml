@@ -1,0 +1,33 @@
+server:
+  port: 8081
+  servlet:
+    session:
+      timeout: 1800
+      cookie:
+        max-age: 86400
+spring:
+  application:
+    name: 1.1
+  thymeleaf:
+    mode: HTML
+    suffix: .html
+    encoding: UTF-8
+    cache: false
+    prefix: classpath:/templates/
+    servlet:
+      content-type: text/html
+  servlet:
+    multipart:
+      max-file-size: -1 
+      max-request-size: -1
+https:
+  httpclient:
+    url: http://localhost:8082
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+proxy:
+  servlet_url: /api/*
+  target_url: http://localhost:8082/api

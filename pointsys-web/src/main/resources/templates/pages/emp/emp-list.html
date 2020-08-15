@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8"></meta>
+<th:block th:include="pages/common/public::header" />
+</head>
+<body class="animated fadeIn timo-layout-page">
+  <div class="page-loading">
+    <div class="rubik-loader"></div>
+  </div>
+  <div class="animated fadeIn layui-card">
+    <div class="layui-card-header timo-card-header">
+      <span><i class="fa fa-bars"></i> 雇员管理</span> <i class="layui-icon layui-icon-refresh refresh-btn"></i>
+    </div>
+    <div class="layui-card-body">
+      <div class="layui-row timo-card-screen put-row">
+        <div class="pull-right screen-btn-group">
+          <div class="pull-left layui-form-pane timo-search-box layui-form">
+            <div class="layui-inline" id="deptInfo">
+              <div th:fragment="deptInfo">
+              <label class="layui-form-label">部门</label>
+              <div class="layui-input-inline timo-search-status">
+                <select class="timo-search-select" name="deptId" lay-verify="tips">
+                  <option value="">请选择</option>
+                  <option th:each="dept:${departmentList}" th:value="${dept.id}" th:text="${dept.name}"></option>
+                </select>
+              </div>
+              </div>
+            </div>
+            <div class="layui-inline">
+              <label class="layui-form-label">用户名</label>
+              <div class="layui-input-block">
+                <input id="dataReload" name="id" value="" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-inline">
+              <button class="layui-btn timo-search-btn" id="searchBtn" data-type="reload">
+                <i class="fa fa-search"></i>
+              </button>
+            </div>
+          </div>
+          <div class="btn-group-right">
+            <div class="timo-toolbar">
+              <button class="layui-btn open-popup" id="add_btn">
+                <i class="fa fa-plus"></i> 添加
+              </button>
+              <button class="layui-btn open-popup" data-type="getCheckData" id="del_btn">
+                <i class="fa fa-trash"></i> 删除
+              </button>
+              <button class="layui-btn" id="import_btn">
+                <i class="fa fa-sign-in"></i> 导入
+              </button>
+              <button class="layui-btn open-popup" id="export_btn">
+                <i class="layui-icon">&#xe67d;</i> 导出
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="timo-table-wrap" id="wrap-table">
+        <table class="layui-table timo-table timo-table-fixed" id="dt-table" lay-filter="allAttr">
+          <thead>
+            <tr>
+              <th class='th'><input type="checkbox" class="checkall" id="checkAll" name="cb-check-all" /></th>
+              <th>用户名</th>
+              <th>部门</th>
+              <th>地址</th>
+              <th>年龄</th>
+              <th>手机</th>
+              <th>工资</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <th:block th:include="pages/common/public::footer" />
+<script>
+layui.use([ 'element', 'form', 'upload' ], function() {
+    var table = layui.table
+    , $ = layui.$
+    , _upload = layui.upload
+    , element = layui.element
+    , form = layui.form;
+
+    ajaxLayuiRequest("GET", '/employee/getDeptList', function(result) {
+        $("#deptInfo").html(result);
+        element.init();
+        form.render('select');
+    });
+
+    columns = [
+        {
+            targets: 0,
+            data: null,
+            className: 'timo-table-checkbox',
+            orderable: false,
+            render: function (data, type, full, meta) {
+                return '<input type="checkbox" id="check_' + data.id + '" class="check" name="check" value="' + data.id + '">';
+            },
+            width: "20px"
+        },
+        { data: "name", defaultContent: "", width: "10%"},
+        { 
+            data: "status", 
+            defaultContent: "",
+            width: "15%",
+            render: function (data, type, row) {
+                var department = row['department'];
+                return '<span>' + department.name + '</span>'
+            }
+        },
+        { data: "address", defaultContent: ""},
+        { data: "age", defaultContent: "", width: "10%"},
+        { data: "tel", defaultContent: "", width: "14%"},
+        { data: "salary", defaultContent: "", width: "8%"},
+        { 
+            data: "", 
+            defaultContent: "",
+            orderable:false,
+            width: "120px",
+            render: function (data, type, row) {
+                var id = row['id'];
+                var edit = buttonEdit(id);
+                var del = buttonDel(id);
+                var info = buttonInfo(id)
+                return edit + del + info;
+            }
+        },
+    ];
+    var data = function(d){
+        d.department = $('.timo-search-select').val();
+        d.username = $("#dataReload").val();
+    }
+    var $table = $('#dt-table'),
+        $wrapper = $("#wrap-table");
+    var config  = initTableConfig(layer, "/employee/list", data, columns, [ [ 3, 'asc' ], [ 1, 'asc' ] ]);
+    config["drawCallback"] = drawCallback($wrapper, $table)
+
+    var _table = $table.DataTable(config);
+    $table.on("change", ":checkbox", function () {
+        if ($(this).is("[name='cb-check-all']")) {
+            $(":checkbox", $table).prop("checked", $(this).prop("checked"));
+        } else {
+            var checkbox = $("tbody :checkbox", $table);
+            $(":checkbox[name='cb-check-all']", $table).prop('checked', checkbox.length === checkbox.filter(':checked').length);
+        }
+    })
+    window.editInfo = function(id) {
+        layer.open({
+            content: '/main/empChangeView/' + id,
+            title: "编辑",
+            area: ['500px', '460px'],
+            type: 2,
+            maxmin: true,
+            shadeClose: true,
+            end: function () {
+                _table.ajax.reload(null, false);
+            }
+        });
+    }
+    window.showDetail = function(id) {
+        layer.open({
+            content: '/main/empDetailsView/' + id,
+            title: "详细信息",
+            area: ['700px', '400px'],
+            type: 2,
+            maxmin: true,
+            shadeClose: true,
+            end: function () {
+                _table.ajax.reload(null, false);
+            }
+        });
+    }
+    window.deleteInfo = function(id) {
+        layer.confirm("确定删除雇员吗?", {icon: 3, title: '提示'}, function (index) {//确定回调
+            ajaxJsonRequest("DELETE", '/employee/delete/' + id, null, function(data) {
+                layer.close(index);
+                handlerResult(data, deleteDone)
+            });
+        }, function(index) {//取消回调
+            layer.close(index);
+        });
+    }
+
+    _upload.render({
+        elem: '#import_btn' //绑定元素
+        ,url: '/employee/excel/upload' //上传接口
+        ,accept: 'file'
+        ,done: function(res){
+            parent.layer.msg("导入成功", {
+                icon : 6
+            });
+            _table.ajax.reload(null, false);
+        }
+        ,error: function(){
+            parent.layer.msg("导入失敗", {
+                icon : 6
+            });
+            _table.ajax.reload(null, false);
+        }
+    });
+
+    $("#searchBtn").on("click",function(){
+        _table.ajax.reload();
+    });
+
+    $("#add_btn").on("click",function(){
+        layer.open({
+            content: "/main/empChangeView",
+            title: "新增用户",
+            area: ['480px', '460px'],
+            type: 2,
+            maxmin: true,
+            shadeClose: true,
+            end: function () {
+                _table.ajax.reload(null, false);
+            }
+        });
+        return false;
+    });
+
+    $("#del_btn").on("click",function(){
+        var $checkbox = $("tbody :checkbox", $table);
+        var checkData = [];
+        $checkbox.filter(':checked').each(function () {
+            checkData.push(_table.row($(this).closest('tr')).data());
+        });
+        if (checkData.length === 0) {
+            layer.msg('请选择数据');
+            return false;
+        }
+        layer.confirm('确定删除吗?', function (index) {
+            var reqBody = checkData.reduce(function(acc, cur) {
+                acc.push(cur.id);
+                return acc;
+            }, []);
+            ajaxJsonRequest("POST", '/employee/batch/delete',  JSON.stringify(reqBody), function (data) {
+                layer.close(index);
+                handlerResult(data, deleteDone)
+            });
+        });
+        return false;
+    });
+
+    $("#import_btn").on("click",function(){
+        return false;
+    });
+
+    $("#export_btn").on("click",function(){
+        var time1 = new Date().format("yyyy_MM_dd_hh_mm_ss_S");  
+        ajaxDownloadFile('/employee/excel/download', 'employee_'+ time1 +'.xls');
+        return false;
+    });
+
+    function deleteDone(data) {
+        parent.layer.msg("删除成功", {
+            icon : 6
+        });
+        _table.ajax.reload(null, false);
+    }
+
+    function exportDone(data) {
+        parent.layer.msg("導出成功", {
+            icon : 6
+        });
+        _table.ajax.reload(null, false);
+    }
+});
+</script>
+</body>
+</html>

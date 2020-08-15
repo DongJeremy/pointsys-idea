@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+    PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+<!--   <settings> -->
+<!--     <setting name="logImpl" value="STDOUT_LOGGING" /> -->
+<!--   </settings> -->
+  <typeAliases>
+    <typeAlias type="org.cloud.point.domain.Employee" alias="Employee" />
+    <typeAlias type="org.cloud.point.domain.Department" alias="Department" />
+    <typeAlias type="org.cloud.point.domain.SysLog" alias="SysLog" />
+    <typeAlias type="org.cloud.point.domain.Permission" alias="Permission" />
+    <typeAlias type="org.cloud.point.domain.Role" alias="Role" />
+    <typeAlias type="org.cloud.point.domain.SysUser" alias="SysUser" />
+    <typeAlias type="org.cloud.point.domain.JobModel" alias="JobModel" />
+    <typeAlias type="org.cloud.point.domain.Mail" alias="Mail" />
+    <typeAlias type="org.cloud.point.domain.FileStorage" alias="FileStorage" />
+  </typeAliases>
+
+</configuration>

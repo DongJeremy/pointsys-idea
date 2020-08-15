@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<th:block th:include="pages/common/public::header" />
+</head>
+<body class="animated fadeIn timo-layout-page">
+  <div class="page-loading">
+    <div class="rubik-loader"></div>
+  </div>
+  <div class="animated fadeIn layui-card">
+    <div class="layui-card-header timo-card-header">
+      <span><i class="fa fa-bars"></i> 系统日志</span>
+    </div>
+    <div class="layui-card-body">
+      <div class="layui-row timo-card-screen">
+        <div class="pull-left layui-form-pane timo-search-box layui-form">
+          <div class="layui-inline">
+            <label class="layui-form-label">类型</label>
+            <div class="layui-input-block timo-search-status">
+              <select class="timo-search-select" name="type" mo:dict="LOG_TYPE" mo-selected="${param.type}"
+                mo-empty="全部"></select>
+            </div>
+          </div>
+          <div class="layui-inline">
+            <label class="layui-form-label">日志名称 </label>
+            <div class="layui-input-block">
+              <input type="text" name="name" th:value="${param.name}" placeholder="请输入日志名称" autocomplete="off"
+                class="layui-input">
+            </div>
+          </div>
+          <div class="layui-inline">
+            <button class="layui-btn timo-search-btn">
+              <i class="fa fa-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="pull-right screen-btn-group">
+          <div class="btn-group-right">
+            <button class="layui-btn" data-type="getCheckData" id="del_btn">
+              <i class="fa fa-trash"></i> 清空日志
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="timo-table-wrap">
+        <table class="layui-table timo-table timo-table-fixed" id="dt-table" lay-filter="allAttr">
+          <thead>
+            <tr>
+              <th>id</th>
+              <th>用户名</th>
+              <th>描述</th>
+              <th>耗时(毫秒)</th>
+              <th>请求方法</th>
+              <th>请求参数</th>
+              <th>IP</th>
+              <th>修改时间</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <th:block th:include="pages/common/public::footer" />
+<script type="text/javascript">
+layui.use('layer', function() {
+    var layer = layui.layer;
+    
+    columns = [
+        { data: "id", defaultContent: "", width: "5%"},
+        { data: "username", defaultContent: "", width: "8%"},
+        { data: "operation", defaultContent: "", width: "8%"},
+        { data: "time", defaultContent: "", width: "8%"},
+        { data: "method", defaultContent: "", width: "25%"},
+        { data: "params", defaultContent: ""},
+        { data: "ip", defaultContent: "", width: "10%"},
+        {
+            data : "createTime", 
+            defaultContent : "",
+            render: function(data, type, full, meta) {
+                return  moment(data).format("YYYY-MM-DD HH:mm:ss");
+            },
+            width: "15%"
+        },
+    ];
+    var config  = initTableConfig(layer, "/syslog/list", null, columns, [ [ 0, 'asc' ], [ 1, 'asc' ] ]);
+    var table = $('#dt-table').DataTable(config);
+    
+    $("#del_btn").on("click", function() {
+        layer.confirm('是否清空日志?', function(index) {
+            ajaxJsonRequest("POST", '/syslog/clear', null, function(data) {
+                layer.close(index);
+                handlerResult(data, function() {
+                    parent.layer.msg("删除成功", {
+                        icon : 6
+                    });
+                    table.ajax.reload();
+                });
+            });
+        });
+    });
+});
+</script>
+</body>
+</html>
